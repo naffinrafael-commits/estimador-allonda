@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Allonda · Estimador de Dragagem</title>
+<style>
+:root{--dk:#002c29;--md:#16423e;--ac:#00ba6e;--g2:#3a9960;--cr:#f1ede8;--c2:#e8e3dc;--wh:#fff;--sc:#4d7470;--bd:#d4cfc8;--al:#d6f5e8;--wn:#b45309;--wl:#fef3c7}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--cr);color:var(--dk);-webkit-font-smoothing:antialiased}
+#app{max-width:600px;margin:0 auto;min-height:100vh}
+/* Header */
+.hdr{background:var(--dk);padding:16px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+.lbx{background:var(--ac);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ln{color:#fff;font-weight:700;font-size:15px;line-height:1.1}
+.ls{color:rgba(255,255,255,.45);font-size:11px}
+/* Body */
+.bd{padding:22px 20px 40px}
+/* Progress */
+.pw{padding:14px 20px 0}
+.pm{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--sc);margin-bottom:5px}
+.pb{height:4px;background:var(--bd);border-radius:2px}
+.pf{height:100%;border-radius:2px;transition:width .3s}
+/* Crumbs */
+.cw{display:flex;flex-wrap:wrap;gap:4px;padding:12px 20px 0}
+.cb{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid transparent;color:var(--sc);background:var(--c2)}
+.cb.dn{background:var(--dk);color:#fff}
+.cb.cu{background:var(--al);color:var(--md);border-color:var(--ac);font-weight:600}
+.cb.gc{background:var(--g2);color:#fff;font-weight:600}
+/* Typography */
+h1{font-size:26px;font-weight:700;line-height:1.25;margin-bottom:12px}
+h2{font-size:21px;font-weight:700}
+.q{font-size:18px;font-weight:600;line-height:1.35;margin-bottom:6px}
+.sb{font-size:13px;color:var(--sc);margin-bottom:18px;line-height:1.6}
+.ht{font-size:12px;color:var(--g2);margin-top:6px;font-style:italic;line-height:1.5}
+/* Options */
+.ops{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.op{background:#fff;border:1.5px solid var(--bd);border-radius:8px;padding:12px 14px;cursor:pointer;text-align:left;width:100%;font-size:14px;color:var(--dk);font-family:inherit;transition:all .15s}
+.op:hover{border-color:var(--g2)}
+.op.sl{border-color:var(--ac);background:var(--al)}
+.or{display:flex;align-items:flex-start;gap:12px}
+.rd{width:18px;height:18px;border-radius:50%;border:2px solid var(--bd);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
+.op.sl .rd{border-color:var(--ac);background:var(--ac)}
+.rk{width:6px;height:6px;border-radius:50%;background:#fff;display:none}
+.op.sl .rk{display:block}
+.op.sl .ol{font-weight:600}
+.od{font-size:12px;color:var(--sc);margin-top:3px;line-height:1.4}
+/* Inputs */
+input[type=text],input[type=email],input[type=tel],input[type=number]{width:100%;font-size:15px;padding:12px 14px;border-radius:8px;border:1.5px solid var(--bd);background:#fff;color:var(--dk);font-family:inherit;outline:none;transition:border-color .15s;display:block;margin-bottom:4px}
+input:focus{border-color:var(--ac)}
+.ig{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.vm{display:flex;gap:8px;margin-bottom:14px}
+.vmb{padding:6px 12px;border-radius:20px;border:1.5px solid var(--bd);background:#fff;color:var(--sc);font-size:12px;cursor:pointer;font-family:inherit}
+.vmb.on{background:var(--dk);color:#fff;border-color:var(--dk);font-weight:600}
+.dg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.dl{font-size:10px;color:var(--sc);margin-top:2px}
+.vc{font-size:14px;color:var(--ac);font-weight:700;margin-top:10px;min-height:20px}
+.nw{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+input.nb{width:140px;font-size:26px;font-weight:700;text-align:center;padding:10px}
+.nu{font-size:15px;color:var(--sc)}
+/* Slider */
+.sw{margin-bottom:20px}
+.st{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.slb{font-size:13px;color:var(--sc)}
+.svl{font-size:28px;font-weight:700;color:var(--dk)}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--bd);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ac);border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--ac);border:2.5px solid #fff;cursor:pointer}
+.sr{display:flex;justify-content:space-between;font-size:11px;color:var(--sc);margin-top:4px}
+.sp{background:var(--al);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;min-height:38px}
+/* Buttons */
+.bt{background:var(--ac);color:var(--dk);border:none;border-radius:8px;padding:13px 22px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;text-align:center;display:inline-block}
+.bt:hover{opacity:.9}
+.bk{display:block;width:100%}
+.bg{background:none;border:1.5px solid var(--bd);border-radius:8px;padding:12px 22px;font-size:14px;cursor:pointer;color:var(--dk);font-family:inherit}
+.bb{background:none;border:none;color:var(--sc);font-size:13px;cursor:pointer;padding:0;font-family:inherit;margin-top:12px}
+/* Cards */
+.cd{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.cdk{background:var(--dk);border-radius:12px;padding:22px 24px;margin-bottom:12px;color:#fff}
+.cac{background:var(--al);border-left:4px solid var(--ac);border-radius:8px;padding:14px 16px;margin-bottom:18px}
+/* Result main */
+.rv{font-size:42px;font-weight:800;color:var(--ac);line-height:1;margin-bottom:14px}
+.rr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.rrl{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em}
+.rrv{font-size:14px;font-weight:600;color:#fff}
+.rrv.ac{color:var(--ac);font-weight:800}
+.rb{position:relative;height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin-bottom:14px}
+.rd2{position:absolute;top:-4px;left:44%;width:12px;height:12px;border-radius:50%;background:var(--ac);border:2.5px solid rgba(0,0,0,.3)}
+.ms{display:flex;flex-wrap:wrap;gap:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+.ml{font-size:9px;color:rgba(255,255,255,.4);margin-bottom:1px;text-transform:uppercase;letter-spacing:.06em}
+.mv{font-size:13px;font-weight:600;color:#fff}
+/* Fases */
+.fg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.fm{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:12px 14px;border-top-width:3px}
+.fmt{font-size:11px;font-weight:700;margin-bottom:4px}
+.fmv{font-size:17px;font-weight:800;color:var(--dk);margin-bottom:4px}
+.fmd{font-size:10px;color:var(--sc)}
+.fd{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:18px 20px;margin-bottom:10px;border-left-width:4px}
+.fh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.fn{font-size:14px;font-weight:700;color:var(--dk)}
+.fdu{font-size:11px;color:var(--sc);margin-top:2px}
+.fvl{font-size:18px;font-weight:800;margin-left:12px;white-space:nowrap}
+.fi{border-top:1px solid var(--bd);padding-top:10px}
+.fit{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--sc);margin-bottom:5px}
+.fdt{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+/* Bars */
+.br{margin-bottom:11px}
+.bm{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.bl{color:var(--sc)}
+.bs{font-size:10px;color:var(--sc);margin-top:1px}
+.bv{font-weight:600;color:var(--dk)}
+.bp{color:var(--sc);font-weight:400}
+.bt2{height:5px;background:var(--c2);border-radius:3px}
+.bf{height:100%;border-radius:3px}
+/* Comparativo */
+.cr2{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;margin-bottom:6px;border:1px solid var(--bd);background:var(--c2)}
+.cr2.cu{background:var(--al);border-color:var(--ac);border-width:1.5px}
+.cn{font-size:13px;color:var(--dk)}
+.cn.b{font-weight:700}
+.ct{font-size:10px;color:var(--ac);font-weight:600;margin-left:4px}
+.crt{font-size:11px;color:var(--sc);margin-top:2px}
+.cvl{font-size:16px;font-weight:700;color:var(--dk)}
+.cvl.cu{color:var(--g2)}
+.cdf{font-size:11px;text-align:right;margin-top:1px}
+/* Geotube */
+.gc{background:var(--dk);border-radius:12px;padding:20px 22px;margin-bottom:12px}
+.gh{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.gi{background:var(--ac);border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gt{color:#fff;font-weight:700;font-size:15px}
+.gs{color:rgba(255,255,255,.45);font-size:11px}
+.gf{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:8px;margin-bottom:16px}
+.gfc{background:rgba(255,255,255,.07);border-radius:8px;padding:10px 12px;text-align:center}
+.gfl{font-size:10px;color:rgba(255,255,255,.45);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+.gfv{font-size:16px;font-weight:800;color:#fff;line-height:1.1}
+.gfv.ac{color:var(--ac)}
+.gfs{font-size:10px;color:rgba(255,255,255,.4);margin-top:3px}
+.ga{color:var(--ac);font-size:18px;font-weight:700;text-align:center}
+.gp{background:rgba(255,255,255,.05);border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.gpt{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em}
+.gpg{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px}
+.gpl{color:rgba(255,255,255,.45)}
+.gpv{color:#fff;font-weight:600;text-align:right}
+.gsl{background:var(--ac);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.gslt{font-size:11px;color:var(--dk);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+.gslg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center}
+.gskl{font-size:10px;color:rgba(0,44,41,.55);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+.gskv{font-size:15px;font-weight:800;color:var(--dk)}
+.gtbl{font-size:12px;width:100%;border-collapse:collapse}
+.gtbl th{padding:6px 8px;text-align:left;color:rgba(255,255,255,.4);font-weight:500;border-bottom:1px solid rgba(255,255,255,.1)}
+.gtbl td{padding:7px 8px;color:#fff;border-bottom:1px solid rgba(255,255,255,.06)}
+.gtbl tr.sr{background:rgba(0,186,110,.12)}
+.gtbl td.st{color:var(--ac);font-weight:700}
+.gn{font-size:11px;color:rgba(255,255,255,.3);margin-top:12px;line-height:1.6}
+.disc{background:var(--wl);border:1px solid #F59E0B;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--wn);line-height:1.7;margin-bottom:20px}
+.ig2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.ic{background:#fff;border-radius:8px;padding:14px 16px;border:1px solid var(--bd)}
+.ict{font-size:13px;font-weight:700;color:var(--dk);margin-bottom:3px}
+.icd{font-size:12px;color:var(--sc);line-height:1.5}
+.mb{background:var(--dk);border-radius:10px;padding:14px 18px;margin-bottom:24px}
+.mbt{color:var(--ac);font-weight:700;font-size:13px;margin-bottom:10px}
+.mbr{display:flex;gap:12px}
+.mbi{font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;flex:1}
+.mbp{width:1px;background:rgba(255,255,255,.15);flex-shrink:0}
+.st2{font-size:13px;font-weight:700;color:var(--dk);margin-bottom:10px;margin-top:4px}
+.gbdg{background:var(--al);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--md);font-weight:500}
+.fn2{font-size:11px;color:var(--sc);text-align:center;margin-top:12px}
+@media(max-width:420px){.fg,.rr{grid-template-columns:1fr}.gf{grid-template-columns:1fr;gap:4px}.ga{transform:rotate(90deg)}.rv{font-size:34px}.dg{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ═══════════════════════════════════════════════════════════
+// ALLONDA — Estimador de Custos de Dragagem  v5
+// Vanilla JS — sem dependências externas
+// Para editar: envie ao Claude descrevendo a alteração.
+// ═══════════════════════════════════════════════════════════
+
+// ── 1. CONFIGURAÇÃO ────────────────────────────────────────
+var STEPS=[
+  {id:"tipoDraga",label:"Equipamento",q:"Qual é o tipo de draga prevista?",sb:"O equipamento define o custo de mobilização e a taxa operacional.",opts:[
+    {v:"sr",l:"Sucção e recalque hidráulica",d:"Draga elétrica/diesel submersa, balsa e tubulação — padrão Allonda",mB:520000,mX:1800000,mo:120000,dL:3.5},
+    {v:"hopper",l:"Draga hopper autopropelida",d:"Embarcação autossuficiente — canais marítimos e portos",mB:380000,mX:1100000,mo:195000,dL:1.2},
+    {v:"geobag",l:"S&R com desaguamento (geobag)",d:"Sucção e recalque + tubogeotêxteis para desidratação",mB:1600000,mX:3200000,mo:150000,dL:4.5},
+    {v:"decanter",l:"Dragagem + Decanter Centrífuga",d:"Draga elétrica + decanters — sem diesel (Opção B Allonda)",mB:1900000,mX:4200000,mo:105000,dL:0},
+    {v:"mec",l:"Dragagem mecanizada",d:"Escavadeira long reach em balsa — PCHs e reservatórios rasos",mB:580000,mX:1500000,mo:112000,dL:2.2}
+  ]},
+  {id:"tipoCorpo",label:"Corpo hídrico",q:"Que tipo de corpo hídrico será dragado?",opts:[
+    {v:"lagoa",l:"Lagoa / tanque industrial / ETE",m:0.93},
+    {v:"reserv",l:"Reservatório / barragem de PCH",m:1.14},
+    {v:"canal",l:"Canal navegável ou rio",m:1.00},
+    {v:"porto",l:"Porto ou terminal marítimo",m:1.28},
+    {v:"rejeito",l:"Barragem de rejeitos de mineração",m:1.98}
+  ]},
+  {id:"regiao",label:"Região",q:"Em qual região do Brasil está o projeto?",opts:[
+    {v:"SE",l:"Sudeste — SP, RJ, MG, ES",m:1.00},
+    {v:"S",l:"Sul — RS, SC, PR",m:1.12},
+    {v:"NE",l:"Nordeste — BA, PE, CE…",m:1.26},
+    {v:"CO",l:"Centro-Oeste",m:1.19},
+    {v:"N",l:"Norte — AM, PA, TO…",m:1.54}
+  ]},
+  {id:"volume",label:"Volume",type:"volume",q:"Qual é o volume estimado a ser dragado?"},
+  {id:"material",label:"Material",q:"Qual é o material predominante no fundo?",sb:"Define consumo de diesel, desgaste dos equipamentos e produtividade.",opts:[
+    {v:"areia",l:"Sedimento arenoso / areia",m:1.00,dm:1.00},
+    {v:"lodo",l:"Lodo orgânico (baixo teor de sólidos)",m:1.30,dm:0.82},
+    {v:"rejMin",l:"Rejeito de mineração / polpa de alta densidade",m:1.85,dm:1.65},
+    {v:"cont",l:"Sedimento contaminado (metais ou hidrocarbonetos)",m:2.20,dm:1.35}
+  ]},
+  {id:"profundidade",label:"Profundidade",q:"Qual é a profundidade média de dragagem?",opts:[
+    {v:"p1",l:"Até 3 metros",m:0.87,dm:0.92},
+    {v:"p2",l:"Entre 3 e 8 metros",m:1.00,dm:1.00},
+    {v:"p3",l:"Entre 8 e 15 metros",m:1.24,dm:1.20},
+    {v:"p4",l:"Mais de 15 metros",m:1.55,dm:1.45}
+  ]},
+  {id:"recalque",label:"Recalque",q:"Qual é a distância de recalque?",sb:"Da área de dragagem até o ponto de disposição.",opts:[
+    {v:"r1",l:"Até 300 metros",m:0.88,mM3:4},
+    {v:"r2",l:"300 a 800 metros",m:1.00,mM3:7},
+    {v:"r3",l:"800 m a 2 km",m:1.30,mM3:14},
+    {v:"r4",l:"2 a 5 km",m:1.58,mM3:25},
+    {v:"r5",l:"Mais de 5 km",m:1.95,mM3:40}
+  ]},
+  {id:"destinacao",label:"Destinação",q:"Qual é a destinação do material dragado?",opts:[
+    {v:"local",l:"Bota-fora local — disposição in situ ou área adjacente",m:1.00},
+    {v:"geobag",l:"Desaguamento com geobags / tubogeotêxteis",m:1.00},
+    {v:"aterro",l:"Transporte para aterro licenciado ou ADF",m:1.55},
+    {v:"adef",l:"A definir / não sei ainda",m:1.14}
+  ]},
+  {id:"regime",label:"Jornada",q:"Como será a jornada de operação?",sb:"Define as horas produtivas por dia.",opts:[
+    {v:"1t",l:"1 turno diurno — 8h/dia",d:"Segunda a sábado, jornada convencional",hd:8},
+    {v:"2t",l:"2 turnos — 16h/dia",d:"Diurno e noturno, escala 12×36",hd:16},
+    {v:"24h",l:"Operação contínua — 22h/dia",d:"Máxima produção, regime 12×36",hd:22}
+  ]},
+  {id:"prazo",label:"Prazo",type:"number",q:"Qual é o prazo total do projeto (meses)?",sb:"Inclui mobilização, execução e desmobilização.",ph:"Ex: 6",un:"meses"},
+  {id:"infraestrutura",label:"Apoio no local",q:"Existe infraestrutura de apoio disponível na área?",sb:"Afeta o custo de montagem do canteiro de obras.",opts:[
+    {v:"completa",l:"Completa — energia, água, refeitório e alojamento disponíveis",su:0,ms:0},
+    {v:"basica",l:"Básica — energia disponível, sem alojamento",su:22000,ms:6500},
+    {v:"nenhuma",l:"Nenhuma — área remota, tudo a ser montado pela Allonda",su:92000,ms:18000},
+    {v:"nao_sei",l:"Não sei informar",su:35000,ms:9000}
+  ]},
+  {id:"polimero",label:"Polímero",q:"O projeto exige uso de polímero para desaguamento?",sb:"Utilizado em geobags, filtros-prensa e lagoas de decantação.",opts:[
+    {v:"sim",l:"Sim — há necessidade de polímero",aM3:2.2},
+    {v:"nao",l:"Não — sem necessidade de polímero",aM3:0},
+    {v:"nao_sei",l:"Não sei informar",aM3:0.5}
+  ]},
+  {id:"batimetria",label:"Monitoramento",q:"O projeto inclui batimetria e monitoramento?",opts:[
+    {v:"nao",l:"Não — apenas dragagem",m:1.00},
+    {v:"sim",l:"Sim — batimetria inicial, de acompanhamento e final",m:1.09},
+    {v:"nao_sei",l:"Não sei informar",m:1.04}
+  ]}
+];
+
+var GSTEPS=[
+  {id:"geoMat",label:"Tipo de sólido",q:"Qual é o tipo predominante do material a ser desaguado?",sb:"Determina a gravidade específica e a capacidade por metro do geobag.",opts:[
+    {v:"organico",l:"Orgânico — lodo, algas, biomassa",sg:1.05,tp:"org"},
+    {v:"lodo_misto",l:"Lodo misto — esgoto, ETE, industrial",sg:1.08,tp:"org"},
+    {v:"argila",l:"Argila / silte fino",sg:1.12,tp:"org"},
+    {v:"rejeito_m",l:"Rejeito de mineração / polpa densa",sg:1.35,tp:"min"},
+    {v:"areia2",l:"Areia / sedimento arenoso",sg:1.55,tp:"min"},
+    {v:"mineral",l:"Mineral / sedimento inorgânico pesado",sg:1.65,tp:"min"}
+  ]},
+  {id:"geoSi",label:"Sólidos in situ",type:"slider",mn:2,mx:40,st:1,un:"%",df:10,q:"Concentração de sólidos do lodo na lagoa?",sb:"Percentual em base peso seco antes da dragagem.",ht:"Lodo orgânico: 5–15% · Rejeito de mineração: 15–35%"},
+  {id:"geoSd",label:"Sólidos no bombeio",type:"slider",mn:2,mx:30,st:1,un:"%",df:10,q:"Concentração durante o bombeio / dragagem?",sb:"A draga pode diluir o material.",ht:"Se não houver diluição, use o mesmo valor anterior."},
+  {id:"geoSf",label:"Meta de desaguamento",type:"slider",mn:15,mx:55,st:1,un:"%",df:30,q:"Concentração de sólidos alvo após o desaguamento?",sb:"Quanto maior, menor o volume final no geobag.",ht:"Orgânicos: 25–35% · Minerais: 35–50%"},
+  {id:"geoCs",label:"Fração grossa",type:"slider",mn:0,mx:50,st:1,un:"%",df:5,q:"Percentual de areia grossa e cascalho no material?",sb:"Esta fração não perde volume durante o desaguamento.",ht:"Lodo puro: 0–5% · Canal navegável: 30–60%"},
+  {id:"geoFill",label:"Enchimento",type:"slider",mn:60,mx:95,st:5,un:"%",df:85,q:"Percentual de enchimento dos geobags?",sb:"Capacidade usada em relação ao máximo — recomendado 80–90%.",ht:"Padrão TenCate: 85%."},
+  {id:"geoTam",label:"Tamanho do geobag",q:"Qual é o tamanho de geobag preferido?",sb:"Geobags maiores = menos unidades, mais área por unidade.",opts:[
+    {v:"GT15",l:"Geotube® 9,15m × 1,98m",d:"Menor — muitas unidades, menos área por unidade"},
+    {v:"GT22",l:"Geotube® 13,72m × 2,13m",d:"Intermediário — bom equilíbrio para projetos médios"},
+    {v:"GT30",l:"Geotube® 18,29m × 2,28m",d:"Padrão para lagoas industriais de médio porte"},
+    {v:"GT37",l:"Geotube® 22,87m × 2,44m",d:"Mais utilizado — equilíbrio entre área e quantidade"},
+    {v:"GT45",l:"Geotube® 27,44m × 2,59m",d:"Grande porte — projetos com muito volume"},
+    {v:"GT60",l:"Geotube® 36,56m × 2,74m",d:"Maior tamanho — menos unidades, máxima eficiência logística"}
+  ]}
+];
+
+var GBS=[
+  {id:"GT15",lb:"9,15m × 1,98m",cO:2.31*2.508,cM:1.97*2.508,pr:8500},
+  {id:"GT22",lb:"13,72m × 2,13m",cO:4.22*2.508,cM:3.54*2.508,pr:14000},
+  {id:"GT30",lb:"18,29m × 2,28m",cO:6.40*2.508,cM:5.37*2.508,pr:19500},
+  {id:"GT37",lb:"22,87m × 2,44m",cO:8.84*2.508,cM:7.47*2.508,pr:27000},
+  {id:"GT45",lb:"27,44m × 2,59m",cO:11.54*2.508,cM:9.24*2.508,pr:35000},
+  {id:"GT60",lb:"36,56m × 2,74m",cO:16.96*2.508,cM:13.71*2.508,pr:52000}
+];
+
+// ── 2. CÁLCULO ─────────────────────────────────────────────
+function gOpt(id,val){
+  var all=STEPS.concat(GSTEPS);
+  for(var i=0;i<all.length;i++){if(all[i].id===id&&all[i].opts){for(var j=0;j<all[i].opts.length;j++){if(all[i].opts[j].v===val)return all[i].opts[j];}}}
+  return {};
+}
+
+function calcGeo(a){
+  var Vi=a.vol_m3||0;
+  var gm=GSTEPS[0].opts.find(function(o){return o.v===a.geoMat})||{sg:1.05,tp:"org"};
+  var G=gm.sg,tp=gm.tp;
+  var Si=(a.geoSi!==undefined?a.geoSi:10)/100;
+  var Sd=(a.geoSd!==undefined?a.geoSd:10)/100;
+  var Sf=(a.geoSf!==undefined?a.geoSf:30)/100;
+  var Cs=(a.geoCs!==undefined?a.geoCs:5)/100;
+  var fl=(a.geoFill!==undefined?a.geoFill:85)/100;
+  var sz=GBS.find(function(s){return s.id===a.geoTam})||GBS[3];
+  var Vc=Vi*Cs,Vf=Vi*(1-Cs);
+  var Bi=G/(Si+G*(1-Si)),Bd=G/(Sd+G*(1-Sd)),Bf=G/(Sf+G*(1-Sf));
+  var Vd=Math.abs(Bi-1)<1e-9?Vi:Vi*(Bi-1)/(Bd-1);
+  var Vff=Vf*(Bi-1)/(Bf-1);
+  var Vg=Vff+Vc,red=1-Vg/Vi;
+  var BDT=Bi*Si*Vf+Vc*2,Mf=Bi*Si*Vf/Sf+Vc*2;
+  var cap=tp==="org"?sz.cO:sz.cM;
+  var Lm=Vg/(cap*fl),nu=Math.ceil(Lm/30);
+  return{Vi:Vi,G:G,Si:Si,Sd:Sd,Sf:Sf,Cs:Cs,fl:fl,Vd:Vd,VdL:Vd*1000,Vg:Vg,red:red,BDT:BDT,Mf:Mf,Lm:Lm,nu:nu,cb:nu*sz.pr,sz:sz,tp:tp,tid:a.geoTam,
+    tab:GBS.map(function(s){var c=tp==="org"?s.cO:s.cM,lm=Vg/(c*fl);return Object.assign({},s,{Lm:lm,nu:Math.ceil(lm/30)});})
+  };
+}
+
+function calcR(a,gd){
+  var vol=a.vol_m3||0,pr=Math.max(1,parseFloat(a.prazo)||5);
+  var draga=STEPS[0].opts.find(function(o){return o.v===a.tipoDraga})||STEPS[0].opts[0];
+  var rM=gOpt("regiao",a.regiao).m||1;
+  var matO=gOpt("material",a.material);
+  var pfO=gOpt("profundidade",a.profundidade);
+  var rcO=gOpt("recalque",a.recalque);
+  var hd=gOpt("regime",a.regime).hd||8;
+  var inf=gOpt("infraestrutura",a.infraestrutura);
+  var cM=gOpt("tipoCorpo",a.tipoCorpo).m||1;
+  var bM=gOpt("batimetria",a.batimetria).m||1;
+  var isG=a.tipoDraga==="geobag"||a.destinacao==="geobag";
+  var isDc=a.tipoDraga==="decanter";
+  var dM=isG?1.0:(gOpt("destinacao",a.destinacao).m||1);
+  // Mob/Desmob
+  var mdf={sr:0.9,hopper:0.7,geobag:1.4,decanter:1.6,mec:0.85}[a.tipoDraga]||1;
+  var mrf={SE:1,S:1.1,NE:1.22,CO:1.15,N:1.42}[a.regiao]||1;
+  var mif={completa:.8,basica:1,nenhuma:1.38,nao_sei:1.12}[a.infraestrutura]||1;
+  var dMob=Math.round(26*mdf*mrf*mif),dDsm=Math.round(dMob*.45);
+  var dOp=Math.max(10,pr*26-dMob-dDsm),hOp=dOp*hd;
+  // Custo diesel
+  var dLm3=draga.dL*(matO.dm||1)*((pfO.dm||1)*.35+.65);
+  var dL=vol*dLm3,cdD=dL*8*rM;
+  // Equipamento
+  var ePr=["sr","mec"].indexOf(a.tipoDraga)>=0;
+  var eH=980*(ePr?.72:1);
+  var cdE=eH*hOp*(1+(matO.m-1||0)*.18)*(1+((rcO.m||1)-1)*.12);
+  // MO
+  var cdMO=draga.mo*pr*rM;
+  // Material
+  var mB=vol*(rcO.mM3||7)*(matO.m||1)*.52;
+  var mG=isG&&gd?gd.cb:(isG?vol*26:0);
+  var cdP=0;
+  if(gd){cdP=gd.Vd*(isDc?1.2:2.5)/1000*12*rM;}
+  else if(a.polimero==="sim"){cdP=vol*2.2*rM;}
+  else if(a.polimero==="nao_sei"){cdP=vol*.6*rM;}
+  var cdM=(mB+mG+cdP)*rM;
+  // Serviços
+  var cdS=(dMob*820+pr*26*380)*rM;
+  // Canteiro
+  var cdI=((inf.su||0)+(inf.ms||0)*pr)*rM;
+  var sub=(cdD+cdE+cdMO+cdM+cdS+cdI)*cM*bM*dM;
+  // Mob custo
+  var dr={sr:.28,hopper:.22,geobag:.30,decanter:.18,mec:.25}[a.tipoDraga]||.28;
+  var vT=Math.min(1,Math.max(0,(vol-50000)/450000));
+  var cMb=(draga.mB+vT*(draga.mX-draga.mB))*rM,cDs=cMb*dr;
+  // CI
+  var ci=sub*.1,cn=(sub+ci)*.035,sg=(sub+ci)*.008;
+  var mg=(isG||isDc)?.27:.25,tx=.0865;
+  var tot=cMb+cDs+sub+ci+cn+sg;
+  var vnd=tot/(1-mg)/(1-tx),K=1/(1-mg)/(1-tx);
+  return{vnd:vnd,mn:vnd*.78,mx:vnd*1.28,
+    mV:cMb*K,oV:sub*K,dV:cDs*K,
+    dslV:cdD*K,eqV:cdE*K,moV:cdMO*K,
+    mtV:cdM*K,svV:cdS*K,ifV:cdI*K,
+    plV:cdP*K,ciV:(ci+cn+sg)*K,
+    mgV:vnd*mg,txV:vnd*tx,
+    rM3:vol>0?Math.round(vnd/vol):0,
+    vol:Math.round(vol),pr:pr,dOp:Math.round(dOp),
+    dMob:dMob,dDsm:dDsm,hOp:Math.round(hOp),
+    dL:Math.round(dL),mgP:Math.round(mg*100),
+    hd:hd,tid:a.tipoDraga,isG:isG,isDc:isDc,
+    bat:a.batimetria,inf:a.infraestrutura
+  };
+}
+
+function calcComp(a,gd){
+  return ["sr","geobag","decanter","mec"].map(function(t){
+    var r=calcR(Object.assign({},a,{tipoDraga:t}),t==="geobag"?gd:null);
+    return{t:t,l:STEPS[0].opts.find(function(o){return o.v===t}).l,vnd:r.vnd,rM3:r.rM3};
+  }).sort(function(a,b){return a.vnd-b.vnd;});
+}
+
+// ── 3. FORMATAÇÃO ──────────────────────────────────────────
+function brl(v,c){v=Math.round(v||0);if(c&&v>=1e6)return"R$ "+(v/1e6).toFixed(1).replace(".",",")+"\xa0M";if(c&&v>=1e3)return"R$ "+Math.round(v/1e3)+" mil";return new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:0}).format(v);}
+function nm(v,d){return(v||0).toLocaleString("pt-BR",{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+function pc(v,t){return t>0?Math.min(100,Math.round(v/t*100)):0;}
+function es(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+// ── 4. ESTADO ──────────────────────────────────────────────
+var S={ph:"intro",step:0,gst:0,ans:{},vm:"m3",vv:"",dL2:"",dW:"",dD2:"",ton:"",nv:"",sl:{geoSi:10,geoSd:10,geoSf:30,geoCs:5,geoFill:85},ld:{nome:"",empresa:"",email:"",tel:""},lerr:"",res:null,gd:null};
+function set(p){Object.assign(S,p);render();}
+
+// ── 5. LOGO ────────────────────────────────────────────────
+function logo(){return'<div class="hdr"><div class="lbx"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002c29" stroke-width="2.2" stroke-linecap="round"><path d="M2 8c2-1 4-1 6 0s4 1 6 0 4-1 6 0"/><path d="M2 13c2-1 4-1 6 0s4 1 6 0 4-1 6 0"/><path d="M6 20l2-5m5 5 2-5m5 5 2-6"/></svg></div><div><div class="ln">Allonda</div><div class="ls">Estimador de Custos · Dragagem</div></div></div>';}
+
+// ── 6. PÁGINAS ─────────────────────────────────────────────
+function pIntro(){
+  return logo()+'<div class="bd"><h1 style="margin-top:24px">Estimativa de custo para projetos de dragagem</h1><p class="sb" style="margin-bottom:24px">Modelo calibrado com propostas reais da Allonda (2024–2026). Responda as perguntas e receba uma estimativa detalhada por fase.</p><div class="ig2"><div class="ic"><div class="ict">Modelo bottom-up</div><div class="icd">Diesel, MO, equipamento, material — calculados separadamente</div></div><div class="ic"><div class="ict">Motor Geotube®</div><div class="icd">Fórmulas TenCate para dimensionamento de geobags</div></div><div class="ic"><div class="ict">Fases detalhadas</div><div class="icd">Mob, operação e desmob com itens incluídos</div></div><div class="ic"><div class="ict">Comparativo</div><div class="icd">Custo entre tecnologias para o mesmo projeto</div></div></div><div class="mb"><div class="mbt">2 módulos em um só fluxo</div><div class="mbr"><div class="mbi"><strong>13 perguntas</strong> — custo operacional completo (diesel, MO, mob, CI, margem)</div><div class="mbp"></div><div class="mbi"><strong style="color:var(--ac)">+6 perguntas</strong> — dimensionamento Geotube® (se geobag)</div></div></div><button class="bt bk" onclick="set({ph:\'form\',step:0})" style="font-size:16px;padding:15px;margin-bottom:12px">Iniciar estimativa →</button><p class="fn2">Estimativa de referência — não vinculante</p></div>';
+}
+
+function pForm(){
+  var cur=STEPS[S.step],p=Math.round((S.step+1)/STEPS.length*100);
+  var cr=STEPS.map(function(s,i){var c=i<S.step?"cb dn":i===S.step?"cb cu":"cb";return'<span class="'+c+'">'+(i<S.step?"✓":es(s.label))+'</span>';}).join("");
+  var inner="";
+  if(!cur.type){
+    inner='<div class="ops">'+cur.opts.map(function(o){var sl=S.ans[cur.id]===o.v;return'<button class="op'+(sl?" sl":"")+'" onclick="pick(\''+cur.id+'\',\''+es(o.v)+'\')"><div class="or"><div class="rd"><div class="rk"></div></div><div><div class="ol">'+es(o.l)+'</div>'+(o.d?'<div class="od">'+es(o.d)+'</div>':"")+'</div></div></button>';}).join("")+'</div>';
+  } else if(cur.type==="volume"){
+    var mds=[["m3","Volume m³"],["dim","L × W × D"],["ton","Tonelagem"]];
+    var cv=Math.round((parseFloat(S.dL2)||0)*(parseFloat(S.dW)||0)*(parseFloat(S.dD2)||0));
+    inner='<div class="vm">'+mds.map(function(x){return'<button class="vmb'+(S.vm===x[0]?" on":"")+'" onclick="setVm(\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+(
+      S.vm==="m3"?'<input type="number" id="vvi" placeholder="Ex: 50000" value="'+es(S.vv)+'" oninput="S.vv=this.value" style="margin-bottom:6px"/><div class="ht">Volume total em metros cúbicos (m³)</div>':
+      S.vm==="dim"?'<div class="dg"><div><input type="number" id="dlI" placeholder="Comprimento" value="'+es(S.dL2)+'" oninput="S.dL2=this.value;updDim()"/><div class="dl">Comprimento (m)</div></div><div><input type="number" id="dwI" placeholder="Largura" value="'+es(S.dW)+'" oninput="S.dW=this.value;updDim()"/><div class="dl">Largura (m)</div></div><div><input type="number" id="ddI" placeholder="Prof. média" value="'+es(S.dD2)+'" oninput="S.dD2=this.value;updDim()"/><div class="dl">Profundidade (m)</div></div></div><div class="vc" id="dimc">'+(cv>0?"Volume: "+nm(cv)+" m³":"")+"</div>":
+      '<input type="number" id="tni" placeholder="Ex: 65000" value="'+es(S.ton)+'" oninput="S.ton=this.value" style="margin-bottom:6px"/><div class="ht">Toneladas estimadas (~1,3 t/m³)</div>'
+    )+'<button class="bt" style="margin-top:14px" onclick="subVol()">Continuar →</button>';
+  } else if(cur.type==="number"){
+    inner='<div class="nw"><input type="number" class="nb" id="nvi" placeholder="'+es(cur.ph)+'" value="'+es(S.nv)+'" oninput="S.nv=this.value" min="1" max="60"/><span class="nu">'+es(cur.un||"")+'</span></div><p class="sb">'+es(cur.sb||"")+'</p><button class="bt" onclick="subNum()">Continuar →</button>';
+  }
+  return logo()+'<div class="cw">'+cr+'</div><div class="pw"><div class="pm"><strong>'+es(cur.label)+'</strong><span>'+( S.step+1)+' / '+STEPS.length+'</span></div><div class="pb"><div class="pf" style="width:'+p+'%;background:var(--ac)"></div></div></div><div class="bd" style="padding-top:20px"><p class="q">'+es(cur.q)+'</p>'+(cur.sb&&!cur.type?'<p class="sb">'+es(cur.sb)+'</p>':"")+inner+(S.step>0?'<button class="bb" onclick="goB()">← Voltar</button>':"")+'</div>';
+}
+
+function pGeo(){
+  var cur=GSTEPS[S.gst],p=Math.round((S.gst+1)/GSTEPS.length*100);
+  var cr=GSTEPS.map(function(s,i){var c=i<S.gst?"cb dn":i===S.gst?"cb gc":"cb";return'<span class="'+c+'">'+(i<S.gst?"✓":es(s.label))+'</span>';}).join("");
+  var inner="";
+  if(!cur.type){
+    inner='<div class="ops">'+cur.opts.map(function(o){var sl=S.ans[cur.id]===o.v;return'<button class="op'+(sl?" sl":"")+'" onclick="gpick(\''+cur.id+'\',\''+es(o.v)+'\')"><div class="or"><div class="rd"><div class="rk"></div></div><div><div class="ol">'+es(o.l)+'</div>'+(o.d?'<div class="od">'+es(o.d)+'</div>':"")+'</div></div></button>';}).join("")+'</div>';
+  } else if(cur.type==="slider"){
+    var val=S.sl[cur.id]!==undefined?S.sl[cur.id]:cur.df;
+    var prev="";
+    if(cur.id==="geoSf"&&S.ans.vol_m3&&S.sl.geoSi){
+      var gm2=GSTEPS[0].opts.find(function(o){return o.v===S.ans.geoMat})||{sg:1.05};
+      var G2=gm2.sg,Si2=S.sl.geoSi/100,Sf2=val/100,Cs2=(S.sl.geoCs||5)/100;
+      var Bi2=G2/(Si2+G2*(1-Si2)),Bf2=G2/(Sf2+G2*(1-Sf2));
+      var Vif=S.ans.vol_m3*(1-Cs2),Vg2=Vif*(Bi2-1)/(Bf2-1)+S.ans.vol_m3*Cs2;
+      var rd=Math.round((1-Vg2/S.ans.vol_m3)*100);
+      prev='<div class="sp"><span style="color:var(--sc)">Volume desaguado estimado: </span><strong>'+nm(Vg2,0)+' m³</strong><span style="color:var(--g2);margin-left:8px;font-weight:600">↓ '+rd+'% redução</span></div>';
+    }
+    inner='<div class="sw"><div class="st"><span class="slb">Valor selecionado</span><span class="svl" id="svl_'+cur.id+'">'+val+cur.un+'</span></div><input type="range" min="'+cur.mn+'" max="'+cur.mx+'" step="'+cur.st+'" value="'+val+'" oninput="updSl(\''+cur.id+'\',+this.value)" style="accent-color:var(--ac)"/><div class="sr"><span>'+cur.mn+cur.un+'</span><span>'+cur.mx+cur.un+'</span></div>'+(cur.ht?'<p class="ht">💡 '+es(cur.ht)+'</p>':"")+'</div>'+prev+'<button class="bt" onclick="subSl()">Continuar →</button>';
+  }
+  return logo()+'<div class="cw">'+cr+'</div><div class="pw"><div class="pm"><strong>'+es(cur.label)+'</strong><span style="background:var(--g2);color:#fff;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:600">Geobag</span><span style="margin-left:auto">'+( S.gst+1)+' / '+GSTEPS.length+'</span></div><div class="pb"><div class="pf" style="width:'+p+'%;background:var(--g2)"></div></div></div><div class="bd" style="padding-top:20px"><div class="gbdg">📐 Dimensionamento Geotube® — motor de cálculo TenCate integrado</div><p class="q">'+es(cur.q)+'</p>'+(cur.sb?'<p class="sb">'+es(cur.sb)+'</p>':"")+inner+(S.gst>0?'<button class="bb" onclick="goBG()">← Voltar</button>':"")+'</div>';
+}
+
+function pLead(){
+  var isG=S.ans.tipoDraga==="geobag"||S.ans.destinacao==="geobag";
+  return logo()+'<div class="bd" style="padding-top:24px"><div class="cac"><div style="font-size:14px;font-weight:700;color:var(--dk)">Estimativa pronta.</div><p class="sb" style="margin-top:4px;margin-bottom:0">Informe seus dados para acessar o resultado completo'+(isG?" com dimensionamento de geobags":"")+'. Nossa equipe pode entrar em contato com um orçamento detalhado.</p></div><div class="ig"><input type="text" id="ln" placeholder="Nome completo *" value="'+es(S.ld.nome)+'" oninput="S.ld.nome=this.value;clearLE()"/><input type="text" id="le" placeholder="Empresa *" value="'+es(S.ld.empresa)+'" oninput="S.ld.empresa=this.value;clearLE()"/><input type="email" id="lm" placeholder="E-mail corporativo *" value="'+es(S.ld.email)+'" oninput="S.ld.email=this.value;clearLE()"/><input type="tel" id="lt" placeholder="Telefone / WhatsApp" value="'+es(S.ld.tel)+'" oninput="S.ld.tel=this.value"/></div>'+(S.lerr?'<div style="color:#c00;font-size:13px;margin-bottom:10px">'+es(S.lerr)+'</div>':"")+' <button class="bt bk" onclick="subLead()" style="font-size:16px;padding:15px;margin-bottom:10px">Ver estimativa detalhada →</button><p class="fn2">Dados protegidos · Não compartilhados com terceiros</p></div>';
+}
+
+function pResult(){
+  var R=S.res,G=S.gd,fn=S.ld.nome.trim().split(" ")[0];
+  var dl=STEPS[0].opts.find(function(o){return o.v===S.ans.tipoDraga;});dl=dl?dl.l:"Dragagem";
+  var fases=[
+    {cor:"#3a9960",nm:"Fase 1 — Mobilização",dur:R.dMob+" dias",vl:R.mV,its:[
+      "Transporte da draga e equipamentos até a área do projeto",
+      R.isDc?"Instalação dos decanters centrífugos e sistema de homogeneização":null,
+      R.isG?"Posicionamento e instalação dos geobags na área de disposição":null,
+      "Instalação da tubulação de recalque e flutuantes",
+      R.inf!=="completa"?"Montagem do canteiro de obras e infraestrutura de apoio":null,
+      "Admissão, deslocamento e exames da equipe","Elaboração do plano de trabalho e documentação técnica"
+    ].filter(Boolean)},
+    {cor:"#00ba6e",nm:"Fase 2 — Operação",dur:R.pr+" meses · "+R.dOp+" dias · "+R.hd+"h/dia",vl:R.oV,its:[
+      "Dragagem de "+(R.vol>0?nm(R.vol)+" m³ de":"todo o")+" material",
+      R.dL>0?"Consumo estimado de diesel: "+nm(R.dL)+" litros":"Draga elétrica — energia por conta do cliente",
+      R.isDc?"Operação contínua dos decanters centrífugos":null,
+      "Equipe em regime de "+(R.hd===8?"1 turno (8h/dia)":R.hd===16?"2 turnos (16h/dia)":"operação contínua"),
+      "Materiais: tubulação, flutuantes, mangueiras e insumos",
+      R.isG?"Monitoramento e manejo dos geobags":null,
+      R.bat==="sim"?"Batimetrias de acompanhamento e relatórios mensais":"Acompanhamento técnico e RDO mensais",
+      "Manutenção preventiva e corretiva dos equipamentos"
+    ].filter(Boolean)},
+    {cor:"#16423e",nm:"Fase 3 — Desmobilização",dur:R.dDsm+" dias",vl:R.dV,its:[
+      "Retirada da draga, balsa e equipamentos da área",
+      R.inf!=="completa"?"Desmontagem e remoção do canteiro de obras":null,
+      "Exames demissionais e encerramento da equipe",
+      R.bat==="sim"?"Batimetria final de conclusão dos serviços":null,
+      "Relatório técnico final e documentação de encerramento"
+    ].filter(Boolean)}
+  ];
+  var bars=[
+    {l:"Combustível (diesel)",v:R.dslV,c:"#D97706",s:R.dL>0?nm(R.dL)+" L":"Elétrica"},
+    {l:"Draga e flotação",v:R.eqV,c:"#3a9960",s:R.isDc?"2× Decanter + draga elétrica":"Locação / amortização"},
+    {l:"Mão de obra (estimativa)",v:R.moV,c:"#00ba6e",s:"Via TOTVS — encargos ~73%"},
+    {l:"Material e tubulação",v:R.mtV,c:"#16423e",s:G?"Inclui "+G.nu+" geobags "+G.sz.lb:"Flutuantes, tubos, mangueiras"},
+    R.plV>100?{l:"Polímero (floculante)",v:R.plV,c:"#7C3AED",s:G?"Base: "+nm(G.Vd,0)+" m³ bombeado":"Estimativa"}:null,
+    {l:"Serviços e fretes",v:R.svV,c:"#64748B",s:"Munck, transporte, apoio"},
+    {l:"Infraestrutura / canteiro",v:R.ifV,c:"#94A3B8",s:"Canteiro, energia, alojamento"},
+    {l:"Custo indireto + contingência",v:R.ciV,c:"#6D28D9",s:"CI 10% + contingência 3,5%"},
+    {l:"Margem Allonda",v:R.mgV,c:"#b45309",s:R.mgP+"% sobre custo total"},
+    {l:"Impostos (PIS/COFINS/ISS)",v:R.txV,c:"#DC2626",s:"PIS 0,65% + COFINS 3% + ISS 5%"}
+  ].filter(function(x){return x&&x.v>100;});
+  var comp=calcComp(S.ans,G),atl=comp.find(function(c){return c.t===S.ans.tipoDraga;})||comp[0];
+
+  var gcard="";
+  if(G){
+    gcard='<div class="gc"><div class="gh"><div class="gi"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><ellipse cx="9" cy="9" rx="8" ry="5" stroke="#002c29" stroke-width="1.5"/><path d="M1 9c0 2.76 3.58 5 8 5s8-2.24 8-5" stroke="#002c29" stroke-width="1.5"/><line x1="9" y1="4" x2="9" y2="14" stroke="#002c29" stroke-width="1.5"/></svg></div><div><div class="gt">Dimensionamento Geotube®</div><div class="gs">Motor TenCate · fórmulas exatas de redução de volume</div></div></div>'
+    +'<div class="gf"><div class="gfc"><div class="gfl">Volume in situ</div><div class="gfv">'+nm(G.Vi)+' m³</div><div class="gfs">Na lagoa</div></div><div class="ga">→</div><div class="gfc"><div class="gfl">Volume bombeado</div><div class="gfv">'+nm(G.Vd,0)+' m³</div><div class="gfs">'+nm(G.VdL/1000,0)+' mil L</div></div><div class="ga">→</div><div class="gfc"><div class="gfl">Volume desaguado</div><div class="gfv ac">'+nm(G.Vg,0)+' m³</div><div class="gfs">↓ '+Math.round(G.red*100)+'% redução</div></div></div>'
+    +'<div class="gp"><div class="gpt">Parâmetros Geotube®</div><div class="gpg"><span class="gpl">Gravidade específica</span><span class="gpv">'+G.G.toFixed(2)+'</span><span class="gpl">Sólidos in situ</span><span class="gpv">'+Math.round(G.Si*100)+'%</span><span class="gpl">Meta desaguamento</span><span class="gpv">'+Math.round(G.Sf*100)+'%</span><span class="gpl">Fração grossa</span><span class="gpv">'+Math.round(G.Cs*100)+'%</span><span class="gpl">Bone Dry Tons</span><span class="gpv">'+nm(G.BDT,0)+' t</span><span class="gpl">Peso total no geobag</span><span class="gpv">'+nm(G.Mf,0)+' t</span></div></div>'
+    +'<div class="gsl"><div class="gslt">Geobag selecionado: '+es(G.sz.lb)+'</div><div class="gslg"><div><div class="gskl">Metros lineares</div><div class="gskv">'+nm(G.Lm,0)+' m</div></div><div><div class="gskl">Unidades (30m)</div><div class="gskv">'+G.nu+'</div></div><div><div class="gskl">Custo material</div><div class="gskv">'+brl(G.cb,true)+'</div></div></div></div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Comparativo por tamanho</div>'
+    +'<table class="gtbl"><thead><tr><th>Circunferência</th><th>Metros lineares</th><th>Unidades (30m)</th></tr></thead><tbody>'
+    +G.tab.map(function(r){var s=r.id===G.tid;return'<tr'+(s?' class="sr"':'')+'><td'+(s?' class="st"':'')+'>'+es(r.lb)+(s?' ←':'')+'</td><td>'+nm(r.Lm,0)+' m</td><td style="font-weight:600">'+r.nu+'</td></tr>';}).join('')
+    +'</tbody></table><p class="gn">Fórmulas TenCate: B=G/(S+G(1−S)), Vf=Vi×(Bi−1)/(Bf−1). Dimensionamento final requer teste de campo.</p></div>';
+  }
+
+  return logo()+'<div class="bd" style="padding-top:22px">'
+    +'<div style="margin-bottom:16px"><div style="font-size:12px;color:var(--sc)">'+es(fn)+' · '+es(S.ld.empresa)+' · '+es(dl)+'</div><h2 style="margin-top:4px">Estimativa de referência</h2>'+(R.isDc?'<div style="font-size:12px;color:var(--ac);margin-top:2px">⚡ Draga elétrica + Decanter — sem custo de diesel</div>':'')+'</div>'
+    // Card principal
+    +'<div class="cdk"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-bottom:6px">Valor de referência · preço de venda estimado</div><div class="rv">'+brl(R.vnd)+'</div><div class="rr"><div><div class="rrl">MÍNIMO (–22%)</div><div class="rrv">'+brl(R.mn,true)+'</div></div><div style="text-align:center"><div class="rrl">REFERÊNCIA</div><div class="rrv ac">'+brl(R.vnd,true)+'</div></div><div style="text-align:right"><div class="rrl">MÁXIMO (+28%)</div><div class="rrv">'+brl(R.mx,true)+'</div></div></div><div class="rb"><div class="rd2"></div></div>'
+    +(R.vol>0?'<div class="ms"><div><div class="ml">R$/m³</div><div class="mv">R$ '+nm(R.rM3)+'</div></div><div><div class="ml">Volume</div><div class="mv">'+nm(R.vol)+' m³</div></div>'+(R.dL>0?'<div><div class="ml">Diesel est.</div><div class="mv">'+nm(R.dL)+' L</div></div>':'<div><div class="ml">Energia</div><div class="mv">Elétrica</div></div>')+'<div><div class="ml">Mob</div><div class="mv">'+R.dMob+' dias</div></div><div><div class="ml">Desmob</div><div class="mv">'+R.dDsm+' dias</div></div><div><div class="ml">Margem</div><div class="mv">'+R.mgP+'%</div></div></div>':'')+'</div>'
+    // Fases mini
+    +'<div class="fg">'+fases.map(function(f){return'<div class="fm" style="border-top-color:'+f.cor+'"><div class="fmt" style="color:'+f.cor+'">'+es(f.nm.split("—")[1]||"")+'</div><div class="fmv">'+brl(f.vl,true)+'</div><div class="fmd">'+es(f.dur)+'</div></div>';}).join('')+'</div>'
+    // Fases detalhadas
+    +'<div class="st2">Detalhamento por fase</div>'
+    +fases.map(function(f){return'<div class="fd" style="border-left-color:'+f.cor+'"><div class="fh"><div><div class="fn">'+es(f.nm)+'</div><div class="fdu">'+es(f.dur)+'</div></div><div class="fvl" style="color:'+f.cor+'">'+brl(f.vl,true)+'</div></div><div class="fi">'+f.its.map(function(it){return'<div class="fit"><div class="fdt" style="background:'+f.cor+'"></div>'+es(it)+'</div>';}).join('')+'</div></div>';}).join('')
+    // Comparativo
+    +'<div class="cd"><div class="st2" style="margin-bottom:6px">Comparativo de tecnologias — mesmo projeto</div><p style="font-size:12px;color:var(--sc);margin-bottom:12px">Estimativa para '+nm(R.vol)+' m³ com os mesmos parâmetros.</p>'
+    +comp.map(function(c){var ia=c.t===S.ans.tipoDraga,dp=atl?Math.round((c.vnd/atl.vnd-1)*100):0;return'<div class="cr2'+(ia?" cu":'')+'"><div><div class="cn'+(ia?" b":"")+'">'+es(c.l)+(ia?'<span class="ct">← selecionado</span>':"")+'</div><div class="crt">R$ '+nm(c.rM3)+'/m³</div></div><div><div class="cvl'+(ia?" cu":"")+'">'+brl(c.vnd,true)+'</div>'+(!ia?'<div class="cdf" style="color:'+(dp>0?"#D97706":"#3a9960")+'">'+( dp>0?"+"+dp+"%":dp+"%")+' vs sel.</div>':"")+'</div></div>';}).join('')
+    +'<p style="font-size:11px;color:var(--sc);margin-top:8px">* Estimativas preliminares. Decanter: draga elétrica sem diesel.</p></div>'
+    +gcard
+    // Breakdown
+    +'<div class="cd"><div class="st2">Composição do valor estimado</div>'
+    +bars.map(function(x){return'<div class="br"><div class="bm"><div><div class="bl">'+es(x.l)+'</div><div class="bs">'+es(x.s)+'</div></div><div style="text-align:right"><span class="bv">'+brl(x.v,true)+'</span> <span class="bp">('+pc(x.v,R.vnd)+'%)</span></div></div><div class="bt2"><div class="bf" style="width:'+pc(x.v,R.vnd)+'%;background:'+x.c+'"></div></div></div>';}).join('')
+    +'<p style="font-size:11px;color:var(--sc);margin-top:12px;border-top:1px solid var(--bd);padding-top:10px;line-height:1.6">* MO: via TOTVS — encargos ~73% inclusos. Impostos: PIS 0,65% + COFINS 3% + ISS 5%.</p></div>'
+    +'<div class="disc"><strong>Estimativa preliminar — não vinculante.</strong> Calibrado com POs e PCs reais da Allonda (2024–2026). Valor final depende de campo, batimetria e negociação. Variação: ±20–28%.</div>'
+    +'<a href="https://allonda.com/contato" target="_blank" class="bt bk" style="font-size:15px;padding:15px;margin-bottom:10px">Solicitar orçamento detalhado →</a>'
+    +'<button class="bg bk" onclick="restart()">Nova estimativa</button>'
+    +'<p class="fn2">'+new Date().toLocaleDateString("pt-BR")+" · "+es(S.ld.empresa)+'</p></div>';
+}
+
+// ── 7. RENDER ──────────────────────────────────────────────
+function render(){
+  var app=document.getElementById("app");
+  if(S.ph==="intro")app.innerHTML=pIntro();
+  else if(S.ph==="form")app.innerHTML=pForm();
+  else if(S.ph==="geo")app.innerHTML=pGeo();
+  else if(S.ph==="lead")app.innerHTML=pLead();
+  else if(S.ph==="result")app.innerHTML=pResult();
+}
+
+// ── 8. ACTIONS ─────────────────────────────────────────────
+function pick(id,val){
+  S.ans[id]=val;
+  var isG=S.ans.tipoDraga==="geobag"||S.ans.destinacao==="geobag";
+  setTimeout(function(){
+    if(S.step<STEPS.length-1){set({step:S.step+1});}
+    else if(isG){set({ph:"geo",gst:0});}
+    else{set({ph:"lead"});}
+  },180);
+}
+function gpick(id,val){
+  S.ans[id]=val;
+  setTimeout(function(){
+    if(S.gst<GSTEPS.length-1){set({gst:S.gst+1});}
+    else{set({ph:"lead"});}
+  },180);
+}
+function setVm(m){S.vm=m;render();}
+function updDim(){
+  var v=Math.round((parseFloat(S.dL2)||0)*(parseFloat(S.dW)||0)*(parseFloat(S.dD2)||0));
+  var el=document.getElementById("dimc");if(el)el.textContent=v>0?"Volume: "+nm(v)+" m³":"";
+}
+function updSl(id,val){
+  S.sl[id]=val;
+  var el=document.getElementById("svl_"+id);if(el)el.textContent=val+"%";
+  if(id==="geoSf"&&S.ans.vol_m3&&S.sl.geoSi){
+    var gm=GSTEPS[0].opts.find(function(o){return o.v===S.ans.geoMat;})||{sg:1.05};
+    var G=gm.sg,Si=S.sl.geoSi/100,Sf=val/100,Cs=(S.sl.geoCs||5)/100;
+    var Bi=G/(Si+G*(1-Si)),Bf=G/(Sf+G*(1-Sf));
+    var Vg=S.ans.vol_m3*(1-Cs)*(Bi-1)/(Bf-1)+S.ans.vol_m3*Cs;
+    var rd=Math.round((1-Vg/S.ans.vol_m3)*100);
+    var el2=document.querySelector(".sp");
+    if(el2)el2.innerHTML='<span style="color:var(--sc)">Volume desaguado: </span><strong>'+nm(Vg,0)+' m³</strong><span style="color:var(--g2);margin-left:8px;font-weight:600">↓ '+rd+'% redução</span>';
+  }
+}
+function subVol(){
+  var m3=0;
+  if(S.vm==="m3"){var el=document.getElementById("vvi");m3=parseFloat(el?el.value:S.vv)||0;}
+  else if(S.vm==="dim"){m3=(parseFloat(S.dL2)||0)*(parseFloat(S.dW)||0)*(parseFloat(S.dD2)||0);}
+  else{var el2=document.getElementById("tni");m3=(parseFloat(el2?el2.value:S.ton)||0)/1.3;}
+  if(m3<=0){alert("Por favor, informe um volume válido.");return;}
+  S.ans.vol_m3=m3;set({step:S.step+1});
+}
+function subNum(){
+  var el=document.getElementById("nvi");var v=parseFloat(el?el.value:S.nv)||0;
+  if(v<=0){alert("Por favor, informe um prazo válido.");return;}
+  S.ans[STEPS[S.step].id]=v;set({step:S.step+1});
+}
+function subSl(){Object.assign(S.ans,S.sl);if(S.gst<GSTEPS.length-1){set({gst:S.gst+1});}else{set({ph:"lead"});}}
+function goB(){if(S.step>0)set({step:S.step-1});else set({ph:"intro"});}
+function goBG(){if(S.gst>0)set({gst:S.gst-1});else set({ph:"form",step:STEPS.length-1});}
+function clearLE(){S.lerr="";}
+function subLead(){
+  var n=S.ld.nome.trim(),e=S.ld.empresa.trim(),m=S.ld.email.trim();
+  if(!n||!e||!m){set({lerr:"Preencha nome, empresa e e-mail."});return;}
+  if(!m.includes("@")){set({lerr:"E-mail inválido."});return;}
+  var fa=Object.assign({},S.ans,S.sl);
+  var gd=null;
+  if(fa.tipoDraga==="geobag"||fa.destinacao==="geobag")gd=calcGeo(fa);
+  var res=calcR(fa,gd);
+  set({gd:gd,res:res,ph:"result",lerr:""});
+}
+function restart(){Object.assign(S,{ph:"intro",step:0,gst:0,ans:{},vm:"m3",vv:"",dL2:"",dW:"",dD2:"",ton:"",nv:"",sl:{geoSi:10,geoSd:10,geoSf:30,geoCs:5,geoFill:85},ld:{nome:"",empresa:"",email:"",tel:""},lerr:"",res:null,gd:null});render();}
+
+// ── 9. INIT ────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
